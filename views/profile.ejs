@@ -1,0 +1,24 @@
+<%- include("partials/header.ejs") %>
+
+<div class="px-4 py-5 my-5 text-center">
+    <img class="d-block mx-auto mb-4" src="/docs/5.0/assets/brand/bootstrap-logo.svg" alt="" width="72" height="57">
+    <h3 class="display-6 fst-italic">Profile</h3>
+    <h1 class="display-4 fw-bold"><%= user.name %></h1>
+    <div class="container d-flex">
+        <div class="col-md-6">
+            <p class="lead">@<%= user.username %></p>
+        </div>
+        <div class="col-md-6">
+            <p class="lead"><%= user.email %></p>
+        </div>
+    </div>
+    <div class="col-lg-6 mx-auto">
+      <p class="lead mb-4">Been a member since <%= user.creationDate %></p>
+      <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
+        <button type="button" class="btn btn-primary btn-lg px-4 gap-3">Edit Profile</button>
+        <button type="button" class="btn btn-outline-secondary btn-lg px-4" onclick="location.href='/logout'">Logout</button>
+      </div>
+    </div>
+  </div>
+
+<%- include("partials/footer.ejs") %>

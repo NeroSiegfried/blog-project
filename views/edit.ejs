@@ -1,0 +1,26 @@
+<%-include("partials/header.ejs")  %>
+
+<div class="container">
+    <% if (message.toLowerCase() == "edit"){ %>
+        <form action="/post/<%= post.id %>" method="post">
+    <% } else if (message.toLowerCase() == "create") { %>
+        <form action="/new" method="post">
+    <% } %>
+    
+        <div class="form-group mb-4 mt-5">
+            <label for="title">Title: </label>
+            <input type="text" name="title" id="title" placeholder="Enter Post Title" value="<%=post.name%>" class="form-control"/>
+        </div>
+        <div class="form-group mb-4">
+            <label for="ratingRange">Rating</label>
+            <input type="range" class="form-range" min="0" max="10" step="0.5" id="ratingRange" name="rating" value="<%= post.rating %>">
+        </div>
+        <div class="form-group mb-4">
+            <label for="review">Content:</label>
+            <textarea name="review" id="review" rows="10" class="form-control"><%= post.review %></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary mb-2"><%= message %> Post</button>
+    </form>
+</div>
+
+<%-include("partials/footer.ejs") %>

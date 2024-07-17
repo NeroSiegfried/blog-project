@@ -1,0 +1,69 @@
+<%-include("partials/header.ejs") %>
+    <% if (locals.feature){ %>
+        <div class="p-4 p-md-5 mb-4 text-white rounded bg-dark">
+            <div class="container py-4">
+                <div class="row flex-lg-row-reverse align-items-center justify-content-center g-5 py-5">
+                    <div class="col-10 col-sm-8 col-lg-6">
+                        <img src="images/<%= feature.image %>" class="d-block mx-lg-auto img-fluid" alt="Bootstrap Themes" width="700" height="30" loading="lazy">
+                    </div>
+                    <div class="col-lg-6">
+                      <h1 class="display-4 fst-italic lh-1 mb-3 feature-title"><%= feature.name %></h1>
+                      <p class="lead my-3 feature-text"><%= feature.review %></p>
+                      <p class="lead mb-0"><a href="/post/<%=feature.id%>" class="text-white fw-bold">Continue reading...</a></p>
+                    </div>
+                  </div>
+            </div>
+        </div>
+    <% } %>
+    
+    
+    <div class="album py-5 bg-body-tertiary">
+        <div class="container">
+    
+          <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3">
+            <% if (locals.posts && posts.length){ posts.forEach(post => { %>
+                <div class="col">
+                    <div class="card shadow-sm">
+                        <img src="images/<%=post.image%>" alt="<%=post.name%> poster" class="img-fluid bd-placeholder-img card-img-top poster">
+                      <div class="card-body">
+                        <div class="text-body-emphasis movie-title">
+                            <h3>
+                                <%=post.name %>
+                            </h3>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mt-2 mb-4">
+                            <small class="text-body-secondary">
+                                Rating: <%= post.rating%>/10
+                            </small>
+                        </div>
+                        <p class="card-text"><%=post.review %></p>
+                        <div class="d-flex justify-content-between align-items-center">
+                          <div class="btn-group">
+                            <a href=<%=`/post/${post.id}`%>>
+                                <button type="button" class="btn btn-sm btn-outline-secondary">View</button>
+                            </a>
+                            <a href=<%=`/delete/${post.id}`%>>
+                                <button type="button" class="btn btn-sm btn-outline-secondary">Delete</button>
+                            </a>
+                          </div>
+                          <small class="text-body-secondary"><%= post.age %></small>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+            <% })} else { %>
+                <div class="pricing-header p-3 pb-md-4 mx-auto text-center">
+                    <p class="fs-5 text-muted">No blog posts to show</p>
+                  </div>
+            <% } %>
+          </div>
+            <% if(loggedIn){ %>
+                <div class="col-12">
+                <div class="col d-flex justify-content-end align-items-center mt-4">                
+                    <a class="btn btn-sm btn-primary" href="/create"><i class="bi bi-plus-circle"></i> New Post </a>
+                </div>
+            </div>
+            <% } %>
+        </div>
+      </div>
+<%-include("partials/footer.ejs") %>
