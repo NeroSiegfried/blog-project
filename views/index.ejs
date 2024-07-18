@@ -4,7 +4,7 @@
             <div class="container py-4">
                 <div class="row flex-lg-row-reverse align-items-center justify-content-center g-5 py-5">
                     <div class="col-10 col-sm-8 col-lg-6">
-                        <img src="images/<%= feature.image %>" class="d-block mx-lg-auto img-fluid" alt="Bootstrap Themes" width="700" height="30" loading="lazy">
+                        <img src="<%= feature.image %>" class="d-block mx-lg-auto img-fluid" alt="Bootstrap Themes" width="700" height="30" loading="lazy" onerror="this.onerror=null;this.src='images/placeholder.png';">
                     </div>
                     <div class="col-lg-6">
                       <h1 class="display-4 fst-italic lh-1 mb-3 feature-title"><%= feature.name %></h1>
@@ -25,7 +25,14 @@
             <% if (locals.posts && posts.length){ posts.forEach(post => { %>
                 <div class="col">
                     <div class="card shadow-sm">
-                        <img src="images/<%=post.image%>" alt="<%=post.name%> poster" class="img-fluid bd-placeholder-img card-img-top poster" onerror="this.onerror=null;this.src='images/placeholder.png';">
+                        <% if (post.image){ %>
+                            <img src="<%=post.image%>" alt="<%=post.name%> poster" class="img-fluid bd-placeholder-img card-img-top poster">
+
+                        <% } else {%>
+                            <%= post.image %>
+                            <img src="images/placeholder.png" alt="<%=post.name%> poster" class="img-fluid bd-placeholder-img card-img-top poster">
+
+                        <% } %>
                       <div class="card-body">
                         <div class="text-body-emphasis movie-title">
                             <h3>

@@ -1,11 +1,12 @@
 import express from "express";
 import bodyParser from "body-parser";
 import pg from "pg";
+import axios from "axios";
 
 const app = express();
 const port = 3000;
 const apiKey = "5cc67861";
-const cover_url = `http://img.omdbapi.com/`;
+const cover_url = `http://omdbapi.com/`;
 
 let posts = [
     {
@@ -79,30 +80,69 @@ let newPostID = 5;
 let newUserID = 3;
 let currentUser = {};
 
-currentUser = users[0];
-
 let loggedIn = true;
 
-const feature_id = 3;
+let feature_id = 3;
+let currentUserID = 1;
+let feature = {};
 
 const db = new pg.Client({
     user: "postgres",
     host: "localhost",
-    database: "",
+    database: "blog",
     password: "Password",
     port: 5432,
 });
 
+let config = {
+    timeout: 1000,
+    params: {
+        apikey : apiKey,
+        t: '',
+    },
+    auth: {  
+    },
+}
+
+db.connect();
+
+const updateData = async () => {
+    const query1 = await db.query("SELECT * FROM users");
+    const query2 = await db.query("SELECT * FROM posts ORDER BY id");
+    const query3 = await db.query("SELECT * FROM users WHERE id = $1", [currentUserID]);
+    const query4 = await db.query("SELECT * FROM posts WHERE id = $1", [feature_id]);
+    users = query1.rows;
+    posts = query2.rows;
+    currentUser = query3.rows;
+    feature = query4.rows[0];
+}
+
+updateData();
 
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(express.static("public"));
 app.use("/post", express.static("public"));
 app.use("/edit", express.static("public"));
 
-app.get("/", (req, res) => {
+
+app.get("/", async (req, res) => {
     posts.forEach(post => {
-        post.age = getAge(post.creationDate);
+        updateImage(post);
     });
+
+    updateData();
+
+    for(var i = 0; i<posts.length; i++){
+        posts[i] = {
+            ...posts[i],
+            age: getAge(posts[i].creation_date),
+        };
+    }
+    
+    // posts.forEach(async post => {
+    //     db.query("INSERT INTO")
+    // })
+    
     const feature_index = posts.findIndex(x => x.id == feature_id);
     if(feature_index == -1){
         res.render("index.ejs", {posts: posts, loggedIn: loggedIn, user: currentUser});
@@ -112,10 +152,19 @@ app.get("/", (req, res) => {
     }
 })
 
-app.get("/post/:id", (req, res) => {
+app.get("/post/:id", async (req, res) => {
     const id = req.params.id;
-    const post = posts[posts.findIndex(x => x.id == id)];
-    const author = users[users.findIndex(x => x.id == post.author)];
+    // const post = posts[posts.findIndex(x => x.id == id)];
+    // const author = users[users.findIndex(x => x.id == post.author)];
+    console.log(id);
+    const query1 = await db.query("SELECT * FROM posts WHERE id = $1", [id]);
+    const post = query1.rows[0];
+    const query2 = await db.query("SELECT users.* FROM users, (SELECT * FROM posts WHERE id = $1) AS subquery WHERE subquery.author = users.id", [id]);
+    const author = query2.rows[0];
+    if (!post.image){
+        post.image = "failure.png";
+    }
+    console.log(post.image);
     res.render("post.ejs", {post: post, loggedIn: loggedIn, user: currentUser, author: author});
 });
 
@@ -124,19 +173,21 @@ app.get("/log-in", (req, res) => {
 });
 
 app.get("/profile", (req, res) => {
+    updateData();
     res.render("profile.ejs", {location: "profile", loggedIn: loggedIn, user: currentUser});
 })
 
-app.post("/log-in", (req, res) => {
+app.post("/log-in", async (req, res) => {
     console.log(req);
     const email = req.body.email;
     const password = req.body.password;
     const userIndex = users.findIndex( x => (x.email == email && x.password == password));
-    if (userIndex == -1){
+    const request = await db.query("SELECT * FROM users WHERE email = $1 and password = $2", [email, password]);
+    if (!request.rows.length){
         console.log("Incorrect Email or Password");
         res.redirect("/log-in");
     }else {
-        currentUser = users[userIndex];
+        currentUser = request.rows[0];
         loggedIn = true;
         res.redirect("/");
     }
@@ -213,7 +264,8 @@ app.listen(port, () => {
 
 
 
-const getAge = (date) => {
+const getAge = (oldDate) => {
+    const date = new Date(oldDate);
     const currentDate = new Date();
     const years = currentDate.getFullYear() - date.getFullYear();
     if (years) return years == 1 ? "1 year" : `${years} years`
@@ -224,3 +276,20 @@ const getAge = (date) => {
     if (seconds < 2629746) return `${Math.floor(seconds/3600)}D`;
     if (seconds < 31556952) return `${Math.floor(seconds/2629746)}M`;
 }
+
+const updateImage = async (post) => {
+    if (!post.image_loaded && post.name_changed){
+        config.params.t = post.name;
+        await axios.get(cover_url, config).then(async (res) => {
+            if (res.data.Poster){
+                await db.query("UPDATE posts SET image_loaded = true, name_changed = false WHERE id = $1", [post.id])
+                await db.query("UPDATE posts SET image = $1 where id = $2", [res.data.Poster, post.id]);
+            }
+            else{
+                await db.query("UPDATE posts SET name_changed = false WHERE id = $1", [post.id])
+            }
+        });
+        
+    }
+};
+

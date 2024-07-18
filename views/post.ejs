@@ -13,9 +13,13 @@
                     Rating: <%= post.rating %>/10
                 </div>
                 <div class="col-md-6">
-                    <img src="images/<%= post.image %>" alt="<%= post.name %> poster" class="img-fluid mb-4" onerror="this.onerror=null;this.src='images/placeholder.png';">
+                    <%try{%>
+                        <img src="<%=post.image%>" alt="<%=post.name%> poster" class="img-fluid bd-placeholder-img card-img-top poster" onerror="this.onerror=null;this.src='images/placeholder.png';">
+                    <% } catch(error) {
+                        console.log(error)
+                    }%>
                 </div>
-                <p class="blog-post-meta"><%= post.creationDate.toString().slice(0,24) %> by <a href="#"><%=author.name%></a></p>
+                <p class="blog-post-meta"><%= new Date(post.creation_date).toString().slice(0,15) %> by <a href="#"><%=author.name%></a></p>
                 <p><%=post.review%></p>
             </article>
     
