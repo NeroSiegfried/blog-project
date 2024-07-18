@@ -15,7 +15,7 @@
         </div>
     </div>
     <div class="col-lg-6 mx-auto">
-      <p class="lead mb-4">Been a member since <%= user.creationDate.toString().slice(0,15) %></p>
+      <p class="lead mb-4">Been a member since <%= new Date(user.creation_date).toString().slice(0,15) %></p>
       <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
         <button type="button" class="btn btn-primary btn-lg px-4 gap-3">Edit Profile</button>
         <button type="button" class="btn btn-outline-secondary btn-lg px-4" onclick="location.href='/logout'">Logout</button>

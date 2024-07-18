@@ -1,14 +1,17 @@
-DROP TABLE IF EXISTS users;
 DROP TABLE IF EXISTS posts;
+DROP TABLE IF EXISTS users;
 
-CREATE TABLE users (
-	id SERIAL PRIMARY KEY NOT NULL,
-	name VARCHAR(100)  NOT NULL,
-	username VARCHAR(20) NOT NULL,
-	email VARCHAR(100) NOT NULL,
-	password VARCHAR(32) NOT NULL,
-	bio VARCHAR(300),
-	creation_date TIMESTAMP NOT NULL
+CREATE TABLE users
+(
+    id serial NOT NULL,
+    name VARCHAR(100) NOT NULL,
+    username VARCHAR(20) NOT NULL,
+    email VARCHAR(100) NOT NULL,
+    password VARCHAR(32) NOT NULL,
+    bio VARCHAR(300),
+    creation_date TIMESTAMP NOT NULL DEFAULT NOW(),
+    PRIMARY KEY (id),
+    UNIQUE (email)
 );
 
 CREATE TABLE posts (
@@ -17,7 +20,10 @@ CREATE TABLE posts (
 	rating DECIMAL NOT NULL,
 	review TEXT NOT NULL,
 	author INT NOT NULL,
-	creation_date TIMESTAMP NOT NULL,
+    image VARCHAR(200) NOT NULL DEFAULT 'images/placeholder.png',
+	creation_date TIMESTAMP NOT NULL DEFAULT NOW(),
+    image_loaded BOOLEAN NOT NULL DEFAULT false,
+    name_changed BOOLEAN NOT NULL DEFAULT true,
 	FOREIGN KEY (author) REFERENCES users(id)
 );
 

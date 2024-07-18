@@ -95,7 +95,6 @@ const db = new pg.Client({
 });
 
 let config = {
-    timeout: 1000,
     params: {
         apikey : apiKey,
         t: '',
@@ -113,7 +112,7 @@ const updateData = async () => {
     const query4 = await db.query("SELECT * FROM posts WHERE id = $1", [feature_id]);
     users = query1.rows;
     posts = query2.rows;
-    currentUser = query3.rows;
+    currentUser = query3.rows[0];
     feature = query4.rows[0];
 }
 
@@ -173,6 +172,7 @@ app.get("/log-in", (req, res) => {
 });
 
 app.get("/profile", (req, res) => {
+    console.log(currentUser);
     updateData();
     res.render("profile.ejs", {location: "profile", loggedIn: loggedIn, user: currentUser});
 })
@@ -181,7 +181,7 @@ app.post("/log-in", async (req, res) => {
     console.log(req);
     const email = req.body.email;
     const password = req.body.password;
-    const userIndex = users.findIndex( x => (x.email == email && x.password == password));
+    //const userIndex = users.findIndex( x => (x.email == email && x.password == password));
     const request = await db.query("SELECT * FROM users WHERE email = $1 and password = $2", [email, password]);
     if (!request.rows.length){
         console.log("Incorrect Email or Password");
@@ -199,9 +199,11 @@ app.get("/logout", (req, res) => {
     res.redirect("/")
 })
 
-app.get("/edit/:id", (req, res) => {
+app.get("/edit/:id", async (req, res) => {
     const id = req.params.id;
-    const post = posts[posts.findIndex(x => x.id == id)];
+    // const post = posts[posts.findIndex(x => x.id == id)];
+    const request = await db.query("SELECT id, name, rating, review FROM posts WHERE id = $1;", [id]);
+    const post = request.rows[0];
     res.render("edit.ejs", {message: "Edit", post: post, loggedIn: loggedIn, user: currentUser});
 });
 
@@ -215,7 +217,7 @@ app.get("/create", (req, res) => {
     res.render("edit.ejs", {message: "Create", post: post, loggedIn: loggedIn, user: currentUser});
 });
 
-app.post("/new", (req, res) => {
+app.post("/new", async (req, res) => {
     console.log(req);
     const title = req.body.title;
     const review = req.body.review;
@@ -231,30 +233,36 @@ app.post("/new", (req, res) => {
         creationDate: new Date(),
         age: 0,
     };
+    const request = await db.query("INSERT INTO posts (name, rating, review, author) VALUES ($1, $2, $3, $4) RETURNING *", [title, rating, review, currentUser.id]);
+    console.log(request);
     posts.push(post);
+    updateImage(request.rows[0]);
     res.redirect("/");
 })
 
-app.post("/post/:id", (req, res) => {
+app.post("/post/:id", async (req, res) => {
     const id = req.params.id;
-    const index = posts.findIndex(x => x.id == id);
+    //const index = posts.findIndex(x => x.id == id);
     const title = req.body.title;
     const review = req.body.review;
     const rating = req.body.rating;
-    posts[index].name = title;
-    posts[index].review = review;
-    posts[index].rating = rating;
+    // posts[index].name = title;
+    // posts[index].review = review;
+    // posts[index].rating = rating;
+    const request = await db.query("UPDATE posts SET name = $1, review = $2, rating = $3 WHERE id = $4", [title, review, rating, id]);
     res.redirect(`/post/${id}`);
 })
 
-app.get("/delete/:id", (req, res) => {
+app.get("/delete/:id", async (req, res) => {
     const id = req.params.id;
     const index = posts.findIndex(x => x.id == id);
     console.log(id);
     //add authentication later
     if (posts[index].author == currentUser.id){
         posts.splice(index, 1);
+        const request = await db.query("DELETE FROM posts WHERE id = $1", [id]);
     };
+
     res.redirect("/");
 })
 
