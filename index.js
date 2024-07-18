@@ -249,7 +249,8 @@ app.post("/post/:id", async (req, res) => {
     // posts[index].name = title;
     // posts[index].review = review;
     // posts[index].rating = rating;
-    const request = await db.query("UPDATE posts SET name = $1, review = $2, rating = $3 WHERE id = $4", [title, review, rating, id]);
+    const request = await db.query("UPDATE posts SET name = $1, review = $2, rating = $3, name_changed = true WHERE id = $4 RETURNING *", [title, review, rating, id]);
+    updateImage(request.rows[0]);
     res.redirect(`/post/${id}`);
 })
 
@@ -277,12 +278,13 @@ const getAge = (oldDate) => {
     const currentDate = new Date();
     const years = currentDate.getFullYear() - date.getFullYear();
     if (years) return years == 1 ? "1 year" : `${years} years`
-    const seconds = currentDate.getSeconds() - date.getSeconds();
-    if (seconds < 60) return `${seconds}s`;
-    if (seconds < 3600) return `${Math.floor(seconds/60)}m`;
-    if (seconds < 86400) return `${Math.floor(seconds/3600)}h`;
-    if (seconds < 2629746) return `${Math.floor(seconds/3600)}D`;
-    if (seconds < 31556952) return `${Math.floor(seconds/2629746)}M`;
+    const seconds = currentDate.getTime() - date.getTime();
+    console.log(seconds);
+    if (seconds < 60/1000) return `${seconds}s`;
+    if (seconds < 3600/1000) return `${Math.floor(seconds/60/1000)}m`;
+    if (seconds < 86400/1000) return `${Math.floor(seconds/3600/1000)}h`;
+    if (seconds < 2629746/1000) return `${Math.floor(seconds/86400/1000)}D`;
+    if (seconds < 31556952/1000) return `${Math.floor(seconds/2629746/1000)}M`;
 }
 
 const updateImage = async (post) => {
