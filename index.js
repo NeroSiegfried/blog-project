@@ -108,7 +108,6 @@ app.get("/", (req, res) => {
         res.render("index.ejs", {posts: posts, loggedIn: loggedIn, user: currentUser});
     }else{
         const feature = posts[feature_index];
-        console.log(feature, feature_index);
         res.render("index.ejs", {posts: posts, feature: feature, loggedIn: loggedIn, user: currentUser});
     }
 })
@@ -116,7 +115,7 @@ app.get("/", (req, res) => {
 app.get("/post/:id", (req, res) => {
     const id = req.params.id;
     const post = posts[posts.findIndex(x => x.id == id)];
-    const author = users[users.findIndex(x => x.id == post.author)].name;
+    const author = users[users.findIndex(x => x.id == post.author)];
     res.render("post.ejs", {post: post, loggedIn: loggedIn, user: currentUser, author: author});
 });
 
@@ -186,22 +185,25 @@ app.post("/new", (req, res) => {
 })
 
 app.post("/post/:id", (req, res) => {
-    console.log("starting");
-    console.log(req);
     const id = req.params.id;
     const index = posts.findIndex(x => x.id == id);
     const title = req.body.title;
     const review = req.body.review;
+    const rating = req.body.rating;
     posts[index].name = title;
     posts[index].review = review;
+    posts[index].rating = rating;
     res.redirect(`/post/${id}`);
 })
 
 app.get("/delete/:id", (req, res) => {
     const id = req.params.id;
     const index = posts.findIndex(x => x.id == id);
+    console.log(id);
     //add authentication later
-    posts.splice(index, 1);
+    if (posts[index].author == currentUser.id){
+        posts.splice(index, 1);
+    };
     res.redirect("/");
 })
 
